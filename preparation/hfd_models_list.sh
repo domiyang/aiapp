@@ -1,4 +1,10 @@
 #!/bin/bash
+# to pre download the models from https://hf-mirror.com once only
+# - 0. install wget, jq for your git-bash
+# - 1. locate to the the preparation folder, e.g: C:\data\github\aiapp\preparation
+# - 2. change the download_to_dir in hfd_models.sh if default value (~/hfd) is not suitable for you.
+# - 3. start git-bash from this preparation folder
+# - 4. run this: export HF_ENDPOINT="https://hf-mirror.com" && sh hfd_models_list.sh ; unset HF_ENDPOINT
 
 # the location of hfd.sh
 hfd_sh=./hfd.sh
@@ -6,13 +12,18 @@ hfd_sh=./hfd.sh
 download_to_dir=~/hfd
 # the tool used to download (wget or aria2c)
 download_tool=wget
+# common include_files for type1 (include model.safetensors)
+include_files_type_safetensors="config.json merges.txt model.safetensors special_tokens_map.json tokenizer.json tokenizer_config.json vocab.json vocab.txt"
+# common exclude_files for type2 (include pytorch_model.bin)
+include_files_type_pytorch="config.json merges.txt pytorch_model.bin special_tokens_map.json tokenizer.json tokenizer_config.json vocab.json vocab.txt"
+
 # single line command download sample
 ## w/o --include --exclude
 ### export HF_ENDPOINT="https://hf-mirror.com" && model_name="facebook/detr-resnet-50" ; hfd_sh=./hfd.sh ; download_to_dir=~/hfd ; download_tool=wget ; sh +x ${hfd_sh} ${model_name} --tool $download_tool --local-dir ${download_to_dir}/${model_name} ; unset HF_ENDPOINT
 ## with --exclude
 ### export HF_ENDPOINT="https://hf-mirror.com" && model_name="facebook/detr-resnet-50" ; hfd_sh=./hfd.sh ; download_to_dir=~/hfd ; download_tool=wget ; sh +x ${hfd_sh} ${model_name} --tool $download_tool --local-dir ${download_to_dir}/${model_name} --exclude pytorch_model.bin ; unset HF_ENDPOINT
 ## with include
-### export HF_ENDPOINT="https://hf-mirror.com" && model_name="Jean-Baptiste/roberta-large-ner-english" ; hfd_sh=./hfd.sh ; download_to_dir=~/hfd ; download_tool=wget ; sh +x ${hfd_sh} ${model_name} --tool $download_tool --local-dir ${download_to_dir}/${model_name} --include config.json merges.txt model.safetensors special_tokens_map.json tokenizer_config.json vocab.json ; unset HF_ENDPOINT
+### export HF_ENDPOINT="https://hf-mirror.com" && model_name="tabularisai/multilingual-sentiment-analysis" ; hfd_sh=./hfd.sh ; download_to_dir=~/hfd ; download_tool=wget ; sh +x ${hfd_sh} ${model_name} --tool $download_tool --local-dir ${download_to_dir}/${model_name} --include config.json merges.txt model.safetensors special_tokens_map.json tokenizer.json tokenizer_config.json vocab.json vocab.txt ; unset HF_ENDPOINT
 
 function hfd_download() {
     local model_name=$1
@@ -40,37 +51,34 @@ function hfd_download() {
     eval $download_cmd
 }
 
-#//TODO - to upate exclude or include to reduce the download size of models.
 # Example usage with include and exclude parameters
 #hfd_download "tabularisai/multilingual-sentiment-analysis" "pytorch_model.bin,config.json" "tokenizer.json,vocab.txt"
 #hfd_download "ProsusAI/finbert" "" "*.h5"  # Exclude all .h5 files
 #hfd_download "boltuix/bert-emotion" "*.bin" "*.txt"  # Include binaries, exclude text files
 
-hfd_download "tabularisai/multilingual-sentiment-analysis"
-hfd_download "ProsusAI/finbert"
-hfd_download "finiteautomata/bertweet-base-sentiment-analysis"
-hfd_download "boltuix/bert-emotion"
+hfd_download "tabularisai/multilingual-sentiment-analysis" "${include_files_type_safetensors}"
+hfd_download "ProsusAI/finbert" "${include_files_type_pytorch}"
+hfd_download "finiteautomata/bertweet-base-sentiment-analysis" "${include_files_type_safetensors}"
+hfd_download "boltuix/bert-emotion" "${include_files_type_safetensors}"
+hfd_download "cardiffnlp/twitter-roberta-base-sentiment-latest" "${include_files_type_pytorch}"
+hfd_download "distilbert/distilbert-base-uncased-finetuned-sst-2-english" "${include_files_type_safetensors}"
 
-hfd_download "cardiffnlp/twitter-roberta-base-sentiment-latest"
-hfd_download "distilbert/distilbert-base-uncased-finetuned-sst-2-english"
+hfd_download "dbmdz/bert-large-cased-finetuned-conll03-english" "${include_files_type_safetensors}"
+hfd_download "Jean-Baptiste/roberta-large-ner-english" "${include_files_type_safetensors}"
+hfd_download "deepset/tinyroberta-squad2" "${include_files_type_safetensors}"
+hfd_download "distilbert/distilbert-base-cased-distilled-squad" "${include_files_type_safetensors}"
 
-hfd_download "dbmdz/bert-large-cased-finetuned-conll03-english"
-hfd_download "Jean-Baptiste/roberta-large-ner-english" "config.json merges.txt model.safetensors special_tokens_map.json tokenizer_config.json vocab.json"
+hfd_download "Falconsai/text_summarization" "${include_files_type_safetensors}"
+hfd_download "google-t5/t5-base" "${include_files_type_safetensors}"
 
-hfd_download "deepset/tinyroberta-squad2"
-hfd_download "distilbert/distilbert-base-cased-distilled-squad"
+hfd_download "MIT/ast-finetuned-audioset-10-10-0.4593" "${include_files_type_safetensors}"
+hfd_download "superb/hubert-base-superb-er" "${include_files_type_pytorch}"
 
-hfd_download "Falconsai/text_summarization"
-hfd_download "google-t5/t5-base"
+hfd_download "openai/whisper-tiny" "${include_files_type_safetensors}"
+hfd_download "openai/whisper-small" "${include_files_type_safetensors}"
 
-hfd_download "MIT/ast-finetuned-audioset-10-10-0.4593"
-hfd_download "superb/hubert-base-superb-er"
+hfd_download "Falconsai/nsfw_image_detection" "${include_files_type_safetensors}"
+hfd_download "google/vit-base-patch16-224" "${include_files_type_safetensors}"
 
-hfd_download "openai/whisper-tiny"
-hfd_download "openai/whisper-small"
-
-hfd_download "Falconsai/nsfw_image_detection"
-hfd_download "google/vit-base-patch16-224"
-
-hfd_download "facebook/detr-resnet-50" "" "pytorch_model.bin"
-hfd_download "microsoft/conditional-detr-resnet-50" "" "pytorch_model.bin"
+hfd_download "facebook/detr-resnet-50" "${include_files_type_safetensors}"
+hfd_download "microsoft/conditional-detr-resnet-50" "${include_files_type_safetensors}"
