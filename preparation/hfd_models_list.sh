@@ -18,17 +18,23 @@ include_files_type_safetensors="config.json merges.txt model.safetensors special
 include_files_type_pytorch="config.json merges.txt pytorch_model.bin special_tokens_map.json tokenizer.json tokenizer_config.json vocab.json vocab.txt"
 
 # single line command download sample
-## w/o --include --exclude
+## download model w/o --include --exclude
 ### export HF_ENDPOINT="https://hf-mirror.com" && model_name="facebook/detr-resnet-50" ; hfd_sh=./hfd.sh ; download_to_dir=~/hfd ; download_tool=wget ; sh +x ${hfd_sh} ${model_name} --tool $download_tool --local-dir ${download_to_dir}/${model_name} ; unset HF_ENDPOINT
-## with --exclude
+
+## download model with --exclude
 ### export HF_ENDPOINT="https://hf-mirror.com" && model_name="facebook/detr-resnet-50" ; hfd_sh=./hfd.sh ; download_to_dir=~/hfd ; download_tool=wget ; sh +x ${hfd_sh} ${model_name} --tool $download_tool --local-dir ${download_to_dir}/${model_name} --exclude pytorch_model.bin ; unset HF_ENDPOINT
-## with include
+
+## download model with include
 ### export HF_ENDPOINT="https://hf-mirror.com" && model_name="tabularisai/multilingual-sentiment-analysis" ; hfd_sh=./hfd.sh ; download_to_dir=~/hfd ; download_tool=wget ; sh +x ${hfd_sh} ${model_name} --tool $download_tool --local-dir ${download_to_dir}/${model_name} --include config.json merges.txt model.safetensors special_tokens_map.json tokenizer.json tokenizer_config.json vocab.json vocab.txt ; unset HF_ENDPOINT
+
+## download dataset
+### export HF_ENDPOINT="https://hf-mirror.com" && dataset_name="Yelp/yelp_review_full" ; hfd_sh=./hfd.sh ; download_to_dir=/d/hfd ; download_tool=wget ; sh +x ${hfd_sh} ${dataset_name} --tool $download_tool --local-dir ${download_to_dir}/datasets/${dataset_name} --dataset ; unset HF_ENDPOINT
 
 function hfd_download() {
     local model_name=$1
     local include_files="$2"
     local exclude_files="$3"
+    local dataset="$4"
     
     local download_cmd="sh +x ${hfd_sh} ${model_name} --tool $download_tool --local-dir ${download_to_dir}/${model_name}"
     
@@ -39,13 +45,22 @@ function hfd_download() {
     if [ -n "$exclude_files" ]; then
         download_cmd+=" --exclude ${exclude_files}"
     fi
-    
-    echo "Downloading model: $model_name using tool: $download_tool to directory: ${download_to_dir}/${model_name}"
-    if [ -n "$include_files" ]; then
-        echo "Including files: $include_files"
-    fi
-    if [ -n "$exclude_files" ]; then
-        echo "Excluding files: $exclude_files"
+
+    if [ -n "$dataset" ]; then
+        # download dataset
+        download_cmd="sh +x ${hfd_sh} ${model_name} --tool $download_tool --local-dir ${download_to_dir}/datasets/${model_name} --dataset"
+        echo "Downloading dataset: $model_name using tool: $download_tool to directory: ${download_to_dir}/datasets/${model_name}"
+    else
+        # download model
+        echo "Downloading model: $model_name using tool: $download_tool to directory: ${download_to_dir}/${model_name}"
+
+        if [ -n "$include_files" ]; then
+            echo "Including files: $include_files"
+        fi
+
+        if [ -n "$exclude_files" ]; then
+            echo "Excluding files: $exclude_files"
+        fi
     fi
     
     eval $download_cmd
@@ -82,3 +97,8 @@ hfd_download "google/vit-base-patch16-224" "${include_files_type_safetensors}"
 
 hfd_download "facebook/detr-resnet-50" "${include_files_type_safetensors}"
 hfd_download "microsoft/conditional-detr-resnet-50" "${include_files_type_safetensors}"
+
+hfd_download "google-bert/bert-base-cased" "${include_files_type_safetensors}"
+
+# datasets
+hfd_download "Yelp/yelp_review_full" "" "" --dataset
