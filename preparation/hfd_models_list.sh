@@ -9,7 +9,7 @@
 # the location of hfd.sh
 hfd_sh=./hfd.sh
 # the location for local model storage
-download_to_dir=~/hfd
+download_to_dir=/d/hfd
 # the tool used to download (wget or aria2c)
 download_tool=wget
 # common include_files for type1 (include model.safetensors)
@@ -48,8 +48,16 @@ function hfd_download() {
 
     if [ -n "$dataset" ]; then
         # download dataset
-        download_cmd="sh +x ${hfd_sh} ${model_name} --tool $download_tool --local-dir ${download_to_dir}/datasets/${model_name} --dataset"
+        download_cmd+=" --dataset"
         echo "Downloading dataset: $model_name using tool: $download_tool to directory: ${download_to_dir}/datasets/${model_name}"
+        
+        if [ -n "$include_files" ]; then
+            echo "Including files: $include_files"
+        fi
+
+        if [ -n "$exclude_files" ]; then
+            echo "Excluding files: $exclude_files"
+        fi        
     else
         # download model
         echo "Downloading model: $model_name using tool: $download_tool to directory: ${download_to_dir}/${model_name}"
@@ -99,6 +107,9 @@ hfd_download "facebook/detr-resnet-50" "${include_files_type_safetensors}"
 hfd_download "microsoft/conditional-detr-resnet-50" "${include_files_type_safetensors}"
 
 hfd_download "google-bert/bert-base-cased" "${include_files_type_safetensors}"
+hfd_download "distilbert/distilbert-base-uncased" "${include_files_type_safetensors}"
+hfd_download "openai/whisper-large-v2" "${include_files_type_safetensors}"
 
 # datasets
 hfd_download "Yelp/yelp_review_full" "" "" --dataset
+hfd_download "mozilla-foundation/common_voice_11_0" "zh_CN/*" "" --dataset
